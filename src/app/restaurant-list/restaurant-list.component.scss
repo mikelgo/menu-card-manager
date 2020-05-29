@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  height: 100vh;
+  width: 300px;
+  padding: 0px 16px;
+}
+
+.container-list {
+  max-height: calc(100vh - 100px);
+  overflow-y: scroll;
+}
+.search-bar {
+  width: 100%;
+}

@@ -1,0 +1,10 @@
+<mat-list-item role="listitem" (click)="onRestaurantSelect()" matRipple>
+    {{restaurant.name}}
+    <br>
+    {{restaurant?.address?.street}}
+    <br>
+    {{restaurant?.address?.zipCode}}, {{restaurant?.address?.city}}
+    <br>
+    <a href="{{restaurant?.address?.websiteUrl}}">{{restaurant?.address?.websiteUrl}}</a>
+</mat-list-item>
+<mat-divider></mat-divider>
