@@ -10,6 +10,8 @@ import {MatCardModule} from '@angular/material/card';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
 
 const MODULES = [
   MatListModule,
@@ -21,7 +23,9 @@ const MODULES = [
   MatCardModule,
   MatDividerModule,
   MatDialogModule,
-  MatToolbarModule
+  MatToolbarModule,
+  MatFormFieldModule,
+  MatInputModule
 ];
 
 @NgModule({

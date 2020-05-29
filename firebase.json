@@ -1,0 +1,19 @@
+{
+  "hosting": [
+    {
+      "target": "menu-card-manager",
+      "public": "dist/menu-card-manager",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "targets": {
+    "menu-card-manager": {
+      "hosting": {
+        "menu-card-manager": [
+          "menu-card-manager"
+        ]
+      }
+    }
+  }
+}
