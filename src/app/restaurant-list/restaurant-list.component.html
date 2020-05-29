@@ -7,6 +7,7 @@
 </form>
 
 <div class="container-list">
-    <app-restaurant-item *ngFor="let restaurant of restaurants$ | async" [restaurant]="restaurant">
+    <app-restaurant-item *ngFor="let restaurant of restaurants$ | async" [restaurant]="restaurant" (selectedRestaurant)="onRestaurantSelect($event)">
     </app-restaurant-item>
 </div>
+

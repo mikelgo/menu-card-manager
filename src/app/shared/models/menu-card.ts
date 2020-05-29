@@ -7,4 +7,5 @@ export interface MenuCard {
    * File which holds the menu card. E.g. a PDF/.png/...
    */
   file: File;
+  uploadDate: Date;
 }
