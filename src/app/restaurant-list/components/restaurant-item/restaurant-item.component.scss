@@ -2,4 +2,15 @@ mat-list-item {
   display: block;
   padding: 4px 8px;
   word-break: break-word;
+  cursor: pointer;
+}
+mat-list-item:hover {
+  background-color: #eee;
+}
+
+.ic-select-restaurant {
+  position: absolute;
+  top: calc(50% - 12px);
+  right: 16px;
+  cursor: pointer;
 }
