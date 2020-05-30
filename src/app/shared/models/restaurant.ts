@@ -1,4 +1,3 @@
-import {MenuCard} from './menu-card';
 import {Address} from './address';
 
 /**
@@ -8,5 +7,4 @@ export interface Restaurant {
   uuid: string;
   name: string;
   address?: Address;
-  menuCards?: MenuCard[];
 }
