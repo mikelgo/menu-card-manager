@@ -1,7 +1,5 @@
 
 <div class="dialog-container">
-    <p>add-menu-card works!</p>
-
     <form [formGroup]="formGroup" >
         <mat-form-field appearance="fill">
             <mat-label>Wähle ein Restaurant</mat-label>
@@ -10,5 +8,17 @@
             </mat-select>
         </mat-form-field>
         <br>
+        <ng-container *ngIf="restaurantFormControlHasValueSelected$ | async">
+            <mat-form-field appearance="fill">
+                <mat-label>Bitte Name der Menükarte eingeben</mat-label>
+                <input [formControl]="formGroup.controls.menuCardName" matInput>
+            </mat-form-field>
+            <br>
+             <div class="formfield-wrapper">
+                 <mat-label>Datei auswählen</mat-label>
+                 <input [formControl]="formGroup.controls.menuCardFile"  type="file">
+             </div>
+            <br>
+        </ng-container>
     </form>
 </div>

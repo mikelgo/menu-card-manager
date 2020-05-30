@@ -4,7 +4,7 @@ import {Restaurant} from '../../models/restaurant';
 import {RestaurantsService} from '../../services/restaurants.service';
 import {FormControl, FormGroup} from '@angular/forms';
 import {MenuCardsCollection} from '../../models/menu-cards-collection';
-import {switchMap} from 'rxjs/operators';
+import {map, startWith, switchMap} from 'rxjs/operators';
 import {MenuCardsService} from '../../services/menu-cards.service';
 
 @Component({
@@ -19,6 +19,7 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
    * Form controls
    */
   public formGroup: FormGroup;
+  public restaurantFormControlHasValueSelected$: Observable<boolean>;
   private destroy$$ = new Subject();
   private restaurantFormControlChange$: Observable<Restaurant>;
   private menuCardNameChange$: Observable<string>;
@@ -30,10 +31,16 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     this.initializeForm();
 
     this.restaurants$ = this.restaurantsService.getRestaurants();
-
     this.menuCardsCollectionForSelectedRestaurant$ = this.restaurantFormControlChange$.pipe(
       switchMap((restaurant) => this.menuCardsCollectionService.getMenuCardCollectionForRestaurant(restaurant.uuid))
     );
+
+    this.restaurantFormControlHasValueSelected$ = this.restaurantFormControlChange$.pipe(
+      map(v => v ? true : false),
+      startWith(false)
+    );
+
+    this.formGroup.valueChanges.subscribe(console.log);
   }
   ngOnDestroy() {
     this.destroy$$.next();
@@ -56,7 +63,7 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
   }
 }
 /*
- * a) Add dropdown with existing restaurants
+ * a) Add dropdown with existing restaurants ----X
  * b) on Select show existing menu-cards as info // or just only give info when entered name already exists!
  * c) on select show fields to:
  *        - add a name
