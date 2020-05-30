@@ -7,6 +7,8 @@ import {MenuCardsCollection} from '../../models/menu-cards-collection';
 import {map, startWith, switchMap} from 'rxjs/operators';
 import {MenuCardsService} from '../../services/menu-cards.service';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import {createUUID} from '../../util/create-uuid';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-add-menu-card',
@@ -33,7 +35,8 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     private dialogRef: MatDialogRef<AddMenuCardDialogComponent>,
     @Inject(MAT_DIALOG_DATA) private data: any,
     private restaurantsService: RestaurantsService,
-    private menuCardsCollectionService: MenuCardsService
+    private menuCardsCollectionService: MenuCardsService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -61,12 +64,29 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
   }
   // TODO implement firebase upload
   onMenuCardSubmit() {
-    throw new Error('not implemented');
     /**
      * MenuCardsCollection for selected restaurant updaten --> MenuCardsCollection.menuCards push new item
      * mediaRef on menu-card updaten
+     *
+     * or new restaurant
      */
-    // after successfull submit show a snackbar message
+    // TODo add address form fields
+    if (this.isNewRestaurant()) {
+      const newRestaurant: Restaurant = {
+        uuid: createUUID(),
+        name: this.formGroup.controls.newRestaurantName.value,
+        address: null
+      };
+      this.restaurantsService.createRestaurant(newRestaurant).subscribe(
+        (restaurant) => {},
+        (error) => this.confirmError(),
+        () => this.confirmCreation()
+      );
+    }
+
+    if (this.isExistingRestaurant()) {
+      // TODO implement
+    }
   }
 
   onCancel() {
@@ -117,6 +137,28 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
       this.formGroup.controls.menuCardFile.enable();
     }
     this.formGroup.updateValueAndValidity();
+  }
+
+  private isExistingRestaurant() {
+    return !this.formGroup.controls.newRestaurantName.value;
+  }
+
+  private isNewRestaurant() {
+    return this.formGroup.controls.newRestaurantName.value;
+  }
+
+  private confirmCreation() {
+    this.snackBar.open('Erfolgreich angelegt - Danke für deine Mithilfe!', null, {
+      duration: 2000
+    });
+    this.dialogRef.close();
+  }
+
+  private confirmError() {
+    this.snackBar.open('Fehler beim Erstellen - versuche es später noch einmal', null, {
+      duration: 4000
+    });
+    this.dialogRef.close();
   }
 }
 /*

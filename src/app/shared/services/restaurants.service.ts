@@ -1,21 +1,35 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable, of} from 'rxjs';
+import {BehaviorSubject, defer, from, Observable, of} from 'rxjs';
 import {Restaurant} from '../models/restaurant';
-import {shareReplay} from 'rxjs/operators';
+import {catchError, finalize, shareReplay} from 'rxjs/operators';
+import {AngularFirestore, DocumentReference} from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RestaurantsService {
-  constructor(private http: HttpClient) {}
+  private readonly RESTAURANT_COLLECTION_NAME = 'restaurants';
+  private loading$$ = new BehaviorSubject<boolean>(false);
+  public pendingRestaurant$ = this.loading$$.asObservable();
+
+  constructor(private http: HttpClient, private firestore: AngularFirestore) {}
 
   public getRestaurants(): Observable<Restaurant[]> {
-    return of(MOCK_RESTAURANTS).pipe(shareReplay({refCount: true, bufferSize: 1}));
+    return this.firestore
+      .collection(this.RESTAURANT_COLLECTION_NAME)
+      .valueChanges()
+      .pipe(shareReplay({refCount: true, bufferSize: 1})) as Observable<Restaurant[]>;
   }
 
-  public createRestaurant(restaurant: Restaurant): Observable<Restaurant> {
-    throw new Error('not implemented yet');
+  public createRestaurant(restaurant: Restaurant): Observable<DocumentReference> {
+    this.loading$$.next(true);
+    return defer(() => {
+      from(this.firestore.collection(this.RESTAURANT_COLLECTION_NAME).add(restaurant)).pipe(
+        catchError((err) => of(null)),
+        finalize(() => this.loading$$.next(false))
+      );
+    });
   }
 }
 

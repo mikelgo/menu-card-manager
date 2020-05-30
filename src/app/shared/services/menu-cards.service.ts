@@ -1,12 +1,15 @@
 import {Injectable} from '@angular/core';
-import {Observable, of} from 'rxjs';
+import {defer, from, Observable, of} from 'rxjs';
 import {MenuCardsCollection} from '../models/menu-cards-collection';
+import {AngularFirestore, DocumentReference} from '@angular/fire/firestore';
+import {catchError} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MenuCardsService {
-  constructor() {}
+  private readonly MENU_CARDS_COLLECTION_NAME = 'menu-cards';
+  constructor(private firestore: AngularFirestore) {}
 
   public getMenuCards(): Observable<MenuCardsCollection[]> {
     return of(MOCK_MENU_CARDS_COLLECTION);
@@ -14,6 +17,23 @@ export class MenuCardsService {
 
   public getMenuCardCollectionForRestaurant(restaurantId: string): Observable<MenuCardsCollection> {
     return of(MOCK_MENU_CARDS_COLLECTION.find((v) => v.restaurant === restaurantId));
+  }
+
+  public createMenuCardsCollection(collection: MenuCardsCollection): Observable<DocumentReference> {
+    return defer(() => {
+      from(this.firestore.collection(this.MENU_CARDS_COLLECTION_NAME).add(collection)).pipe(
+        catchError((err) => of(null))
+      );
+    });
+  }
+
+  // TODO check if this really updates an existing collection
+  public updateMenuCardsCollection(collection: MenuCardsCollection): Observable<DocumentReference> {
+    return defer(() => {
+      from(this.firestore.collection(this.MENU_CARDS_COLLECTION_NAME).add(collection)).pipe(
+        catchError((err) => of(null))
+      );
+    });
   }
 }
 
