@@ -1,11 +1,12 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {Observable, Subject} from 'rxjs';
 import {Restaurant} from '../../models/restaurant';
 import {RestaurantsService} from '../../services/restaurants.service';
-import {FormControl, FormGroup} from '@angular/forms';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {MenuCardsCollection} from '../../models/menu-cards-collection';
 import {map, startWith, switchMap} from 'rxjs/operators';
 import {MenuCardsService} from '../../services/menu-cards.service';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-add-menu-card',
@@ -19,13 +20,20 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
    * Form controls
    */
   public formGroup: FormGroup;
+  public formIsValid$: Observable<boolean>;
+
   public restaurantFormControlHasValueSelected$: Observable<boolean>;
   private destroy$$ = new Subject();
   private restaurantFormControlChange$: Observable<Restaurant>;
   private menuCardNameChange$: Observable<string>;
   private menuCardFileChange$: Observable<any>;
 
-  constructor(private restaurantsService: RestaurantsService, private menuCardsCollectionService: MenuCardsService) {}
+  constructor(
+    private dialogRef: MatDialogRef<AddMenuCardDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) private data: any,
+    private restaurantsService: RestaurantsService,
+    private menuCardsCollectionService: MenuCardsService
+  ) {}
 
   ngOnInit(): void {
     this.initializeForm();
@@ -36,15 +44,23 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     );
 
     this.restaurantFormControlHasValueSelected$ = this.restaurantFormControlChange$.pipe(
-      map(v => v ? true : false),
+      map((v) => (v ? true : false)),
       startWith(false)
     );
 
-    this.formGroup.valueChanges.subscribe(console.log);
+    this.restaurantFormControlHasValueSelected$.subscribe((_) => this.setRequiredValidators());
   }
   ngOnDestroy() {
     this.destroy$$.next();
     this.destroy$$.complete();
+  }
+  // TODO implement firebase upload
+  onMenuCardSubmit() {
+    throw new Error('not implemented');
+  }
+
+  onCancel() {
+    this.dialogRef.close();
   }
 
   private initializeForm(): void {
@@ -60,6 +76,14 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     this.restaurantFormControlChange$ = this.formGroup.controls.restaurants.valueChanges;
     this.menuCardNameChange$ = this.formGroup.controls.menuCardName.valueChanges;
     this.menuCardFileChange$ = this.formGroup.controls.menuCardFile.valueChanges;
+
+    this.formIsValid$ = this.formGroup.valueChanges.pipe(map((_) => this.formGroup.valid));
+  }
+
+  private setRequiredValidators(): void {
+    this.formGroup.controls.menuCardName.setValidators(Validators.required);
+    this.formGroup.controls.menuCardFile.setValidators(Validators.required);
+    this.formGroup.updateValueAndValidity();
   }
 }
 /*
@@ -75,3 +99,5 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
  * a) add new restaurant---> only enable when no restaurant is selected
  *
  * */
+// TODO form validation
+// TODO upload to Firebase
