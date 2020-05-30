@@ -1,7 +1,7 @@
 /**
  * Defines a menu card.
  */
-export interface MenuCards {
+export interface MenuCardsCollection {
   uuid: string;
   /**
    * Reference to restaurant ID
@@ -10,5 +10,5 @@ export interface MenuCards {
   /**
    * Reference to the files
    */
-  files: string[];
+  menuCards: string[];
 }
