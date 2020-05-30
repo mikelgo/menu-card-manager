@@ -23,6 +23,7 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
   public formIsValid$: Observable<boolean>;
 
   public restaurantFormControlHasValueSelected$: Observable<boolean>;
+  public newRestaurantSelectChange$: Observable<boolean>;
   private destroy$$ = new Subject();
   private restaurantFormControlChange$: Observable<Restaurant>;
   private menuCardNameChange$: Observable<string>;
@@ -49,6 +50,10 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     );
 
     this.restaurantFormControlHasValueSelected$.subscribe((_) => this.setRequiredValidators());
+
+    this.newRestaurantSelectChange$.subscribe((isSelected) => {
+      this.toggleFormGroupVisibility(isSelected);
+    });
   }
   ngOnDestroy() {
     this.destroy$$.next();
@@ -57,6 +62,11 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
   // TODO implement firebase upload
   onMenuCardSubmit() {
     throw new Error('not implemented');
+    /**
+     * MenuCardsCollection for selected restaurant updaten --> MenuCardsCollection.menuCards push new item
+     * mediaRef on menu-card updaten
+     */
+    // after successfull submit show a snackbar message
   }
 
   onCancel() {
@@ -67,7 +77,9 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     this.formGroup = new FormGroup({
       restaurants: new FormControl(),
       menuCardName: new FormControl(),
-      menuCardFile: new FormControl()
+      menuCardFile: new FormControl(),
+      newRestaurantSelect: new FormControl(),
+      newRestaurantName: new FormControl()
     });
     this.initializeFormObservables();
   }
@@ -77,12 +89,33 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     this.menuCardNameChange$ = this.formGroup.controls.menuCardName.valueChanges;
     this.menuCardFileChange$ = this.formGroup.controls.menuCardFile.valueChanges;
 
+    this.newRestaurantSelectChange$ = this.formGroup.controls.newRestaurantSelect.valueChanges;
     this.formIsValid$ = this.formGroup.valueChanges.pipe(map((_) => this.formGroup.valid));
   }
 
   private setRequiredValidators(): void {
     this.formGroup.controls.menuCardName.setValidators(Validators.required);
     this.formGroup.controls.menuCardFile.setValidators(Validators.required);
+    this.formGroup.updateValueAndValidity();
+  }
+
+  /**
+   * Updates visibility of forms to update an existing restaurant or
+   * to create a new one
+   * @param isSelected
+   */
+  private toggleFormGroupVisibility(isSelected: boolean) {
+    if (isSelected) {
+      this.formGroup.controls.newRestaurantName.setValidators(Validators.required);
+      this.formGroup.controls.restaurants.disable();
+      this.formGroup.controls.menuCardName.disable();
+      this.formGroup.controls.menuCardFile.disable();
+    } else {
+      this.formGroup.controls.newRestaurantName.clearValidators();
+      this.formGroup.controls.restaurants.enable();
+      this.formGroup.controls.menuCardName.enable();
+      this.formGroup.controls.menuCardFile.enable();
+    }
     this.formGroup.updateValueAndValidity();
   }
 }

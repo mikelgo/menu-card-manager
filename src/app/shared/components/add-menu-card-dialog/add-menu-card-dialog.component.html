@@ -2,24 +2,47 @@
 <div class="dialog-container">
     <mat-icon (click)="onCancel()" class="ic-close">close</mat-icon>
     <form [formGroup]="formGroup" >
-        <mat-form-field appearance="fill" class="full-width">
-            <mat-label>Wähle ein Restaurant</mat-label>
-            <mat-select [formControl]="formGroup.controls.restaurants">
-                <mat-option *ngFor="let option of restaurants$ | async" [value]="option">{{option?.name}}</mat-option>
-            </mat-select>
-        </mat-form-field>
-        <br>
-        <ng-container *ngIf="restaurantFormControlHasValueSelected$ | async">
+        <!--   EXISTING RESTAURANT     -->
+       <ng-container *ngIf="!(newRestaurantSelectChange$ | async)">
+           <mat-form-field appearance="fill" class="full-width">
+               <mat-label>Wähle ein Restaurant</mat-label>
+               <mat-select [formControl]="formGroup.controls.restaurants">
+                   <mat-option *ngFor="let option of restaurants$ | async" [value]="option">{{option?.name}}</mat-option>
+               </mat-select>
+           </mat-form-field>
+           <br>
+           <ng-container *ngIf="restaurantFormControlHasValueSelected$ | async">
+               <mat-form-field appearance="fill" class="full-width">
+                   <mat-label>Bitte Name der Menükarte eingeben</mat-label>
+                   <input [formControl]="formGroup.controls.menuCardName" matInput>
+               </mat-form-field>
+               <br>
+               <div class="formfield-wrapper full-width">
+                   <mat-label>Datei auswählen</mat-label>
+                   <input [formControl]="formGroup.controls.menuCardFile"  type="file">
+               </div>
+               <br>
+           </ng-container>
+       </ng-container>
+
+        <!--   NEW RESTAURANT     -->
+        <ng-container *ngIf="!(restaurantFormControlHasValueSelected$ | async)">
             <mat-form-field appearance="fill" class="full-width">
-                <mat-label>Bitte Name der Menükarte eingeben</mat-label>
-                <input [formControl]="formGroup.controls.menuCardName" matInput>
+                <mat-label>Neues Restaurant anlegen</mat-label>
+                <mat-select [formControl]="formGroup.controls.newRestaurantSelect">
+                    <mat-option  [value]="false">Nein</mat-option>
+                    <mat-option  [value]="true">Ja</mat-option>
+                </mat-select>
             </mat-form-field>
-            <br>
-             <div class="formfield-wrapper full-width">
-                 <mat-label>Datei auswählen</mat-label>
-                 <input [formControl]="formGroup.controls.menuCardFile"  type="file">
-             </div>
-            <br>
+            <ng-container *ngIf="(newRestaurantSelectChange$ | async)">
+                <mat-form-field appearance="fill" class="full-width">
+                    <mat-label>Bitte Name des Restaurants eingeben</mat-label>
+                    <input [formControl]="formGroup.controls.newRestaurantName" matInput>
+                </mat-form-field>
+                <br>
+            </ng-container>
+        </ng-container>
+        <ng-container *ngIf="(restaurantFormControlHasValueSelected$ | async) || (newRestaurantSelectChange$ | async)">
             <div class="btn-group-wrapper">
                 <button
                         (click)="onMenuCardSubmit()"
