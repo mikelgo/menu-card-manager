@@ -4,6 +4,9 @@ import {switchMap, takeUntil} from 'rxjs/operators';
 import {MenuCardsService} from './services/menu-cards.service';
 import {MenuCardsCollection} from '../shared/models/menu-cards-collection';
 import {OrchestrationService} from '../shared/services/orchestration.service';
+import {ActivatedRoute, Router} from '@angular/router';
+import {normalizeRoutes} from '../shared/util/normalize-routes';
+import {MenuCard} from '../shared/models/menu-card';
 
 @Component({
   selector: 'app-menu-card-list',
@@ -17,7 +20,9 @@ export class MenuCardListComponent implements OnInit, OnDestroy {
 
   constructor(
     private menuCardsCollectionService: MenuCardsService,
-    private orchestrationService: OrchestrationService
+    private orchestrationService: OrchestrationService,
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -36,5 +41,11 @@ export class MenuCardListComponent implements OnInit, OnDestroy {
 
   onCollectionSelect(collection: MenuCardsCollection) {
     this.orchestrationService.setActiveMenuCardsCollection(collection);
+  }
+
+  onMenuCardSelect(menuCard: MenuCard): void {
+    const normalizedId = normalizeRoutes(menuCard.displayName);
+    this.orchestrationService.setActiveMenuCard(menuCard);
+    this.router.navigate([normalizedId], {relativeTo: this.route});
   }
 }

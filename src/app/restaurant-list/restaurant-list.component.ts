@@ -4,6 +4,7 @@ import {Observable} from 'rxjs';
 import {Restaurant} from '../shared/models/restaurant';
 import {ActivatedRoute, Router} from '@angular/router';
 import {OrchestrationService} from '../shared/services/orchestration.service';
+import {normalizeRoutes} from '../shared/util/normalize-routes';
 
 @Component({
   selector: 'app-restaurant-list',
@@ -24,7 +25,7 @@ export class RestaurantListComponent implements OnInit {
   }
 
   onRestaurantSelect(restaurant: Restaurant): void {
-    const normalizedId = restaurant.name.replace(new RegExp(/[ ,.]/g), '-');
+    const normalizedId = normalizeRoutes(restaurant.name);
     this.orchestrationService.setActiveRestaurantId(restaurant.uuid);
     this.router.navigate([normalizedId], {relativeTo: this.route});
   }
