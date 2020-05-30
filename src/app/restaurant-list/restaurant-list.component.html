@@ -1,13 +1,5 @@
-<form class="example-form">
-    <mat-form-field class="search-bar">
-        <mat-label>Suche Restaurant</mat-label>
-        <input matInput placeholder="z.b. Pizza Amore Mio">
-    </mat-form-field>
-
-</form>
-
 <div class="container-list">
-    <app-restaurant-item *ngFor="let restaurant of restaurants$ | async" [restaurant]="restaurant" (selectedRestaurant)="onRestaurantSelect($event)">
+    <app-restaurant-item (selectedRestaurant)="onRestaurantSelect($event)" *ngFor="let restaurant of restaurants$ | async" [restaurant]="restaurant">
     </app-restaurant-item>
 </div>
 
