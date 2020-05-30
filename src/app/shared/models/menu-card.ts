@@ -1,8 +1,12 @@
 export interface MenuCard {
   uuid: string;
   /**
-   * File which holds the menu card. E.g. a PDF/.png/...
+   * Name which will be displayed, e.g. CW10 or June 2020
    */
-  file: File;
+  displayName: string;
+  /**
+   * Reference to the File which holds the menu card. E.g. a PDF/.png/...
+   */
+  mediaRef: string;
   uploadDate?: Date;
 }

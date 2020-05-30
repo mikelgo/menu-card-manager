@@ -21,11 +21,17 @@ const MOCK_MENU_CARDS_COLLECTION: MenuCardsCollection[] = [
   {
     uuid: 'asdfv-asdf',
     restaurant: 'asasdf',
-    menuCards: ['menu-1', 'menu-2']
+    menuCards: [
+      {uuid: 'asdf', displayName: 'cw 10', mediaRef: 'media-ref-id11'},
+      {uuid: 'asddf', displayName: 'cw 11', mediaRef: 'media-ref-id22'}
+    ]
   },
   {
     uuid: 'asdfv-ghsdf',
     restaurant: 'asdf',
-    menuCards: ['menu-11', 'menu-22']
+    menuCards: [
+      {uuid: 'asdf-asdf', displayName: 'June 2020', mediaRef: 'media-ref-id1'},
+      {uuid: 'asddf-asdf', displayName: 'July 2020', mediaRef: 'media-ref-id2'}
+    ]
   }
 ];

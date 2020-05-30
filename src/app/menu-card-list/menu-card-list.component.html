@@ -1,1 +1,3 @@
-<p>menu-card-list works!</p>
+<div class="container-list">
+    <app-menu-card-collection-list (selectedCollection)="onCollectionSelect($event)" [collection]="activeMenucardCollection$ | async"></app-menu-card-collection-list>
+</div>

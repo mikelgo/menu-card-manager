@@ -1,6 +1,8 @@
 /**
- * Defines a menu card.
+ * Defines a menu card colletion.
  */
+import {MenuCard} from './menu-card';
+
 export interface MenuCardsCollection {
   uuid: string;
   /**
@@ -10,5 +12,5 @@ export interface MenuCardsCollection {
   /**
    * Reference to the files
    */
-  menuCards: string[];
+  menuCards: MenuCard[];
 }

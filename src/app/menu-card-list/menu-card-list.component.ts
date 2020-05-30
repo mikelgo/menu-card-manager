@@ -11,9 +11,10 @@ import {OrchestrationService} from '../shared/services/orchestration.service';
   styleUrls: ['./menu-card-list.component.scss']
 })
 export class MenuCardListComponent implements OnInit, OnDestroy {
+  public activeMenucardCollection$: Observable<MenuCardsCollection>;
   private destroy$$ = new Subject();
   private activeRestaurantId$: Observable<string>;
-  private activeMenucardCollection$: Observable<MenuCardsCollection>;
+
   constructor(
     private menuCardsCollectionService: MenuCardsService,
     private orchestrationService: OrchestrationService
@@ -31,5 +32,9 @@ export class MenuCardListComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$$.next();
     this.destroy$$.complete();
+  }
+
+  onCollectionSelect(collection: MenuCardsCollection) {
+    this.orchestrationService.setActiveMenuCardsCollection(collection);
   }
 }
