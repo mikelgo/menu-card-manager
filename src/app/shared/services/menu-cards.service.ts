@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {Observable, of} from 'rxjs';
-import {MenuCardsCollection} from '../../shared/models/menu-cards-collection';
+import {MenuCardsCollection} from '../models/menu-cards-collection';
 
 @Injectable({
   providedIn: 'root'

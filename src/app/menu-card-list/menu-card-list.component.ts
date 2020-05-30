@@ -1,7 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Observable, Subject} from 'rxjs';
 import {switchMap, takeUntil} from 'rxjs/operators';
-import {MenuCardsService} from './services/menu-cards.service';
+import {MenuCardsService} from '../shared/services/menu-cards.service';
 import {MenuCardsCollection} from '../shared/models/menu-cards-collection';
 import {OrchestrationService} from '../shared/services/orchestration.service';
 import {ActivatedRoute, Router} from '@angular/router';
