@@ -1,0 +1,16 @@
+
+.dialog-container{
+  min-height: 300px;
+}
+
+@media only screen and (min-width: 720px)  {
+  .dialog-container {
+    min-width: calc(0.67 * 100vw);
+  }
+}
+
+@media only screen and (max-width: 719px)  {
+  .dialog-container {
+    width: 100vw;
+  }
+}

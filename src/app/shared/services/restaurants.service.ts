@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable, of} from 'rxjs';
 import {Restaurant} from '../models/restaurant';
+import {shareReplay} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ export class RestaurantsService {
   constructor(private http: HttpClient) {}
 
   public getRestaurants(): Observable<Restaurant[]> {
-    return of(MOCK_RESTAURANTS);
+    return of(MOCK_RESTAURANTS).pipe(shareReplay({refCount: true, bufferSize: 1}));
   }
 
   public createRestaurant(restaurant: Restaurant): Observable<Restaurant> {
