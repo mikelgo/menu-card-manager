@@ -1,11 +1,11 @@
 import {RouterModule, Routes} from '@angular/router';
 import {NgModule} from '@angular/core';
 import {MenuCardListComponent} from './menu-card-list.component';
+import {MenuCardDetailComponent} from './components/menu-card-detail/menu-card-detail.component';
 
-// TODO add Child component
 const routes: Routes = [
   {path: '', component: MenuCardListComponent, children: [
-      {path: ':menucardId', component: null}
+      {path: ':menucardId', component: MenuCardDetailComponent}
     ]}
 ];
 
