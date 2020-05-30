@@ -1,4 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {OrchestrationService} from '../../../shared/services/orchestration.service';
+import {Observable} from 'rxjs';
+import {MenuCard} from '../../../shared/models/menu-card';
 
 @Component({
   selector: 'app-menu-card-detail',
@@ -6,10 +9,10 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./menu-card-detail.component.scss']
 })
 export class MenuCardDetailComponent implements OnInit {
-
-  constructor() { }
+  public activeMenuCard$: Observable<MenuCard>;
+  constructor(private orchestrationService: OrchestrationService) {}
 
   ngOnInit(): void {
+    this.activeMenuCard$ = this.orchestrationService.activeMenuCard$;
   }
-
 }
