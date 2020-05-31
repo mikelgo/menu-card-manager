@@ -42,7 +42,9 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initializeForm();
 
-    this.restaurants$ = this.restaurantsService.getRestaurants();
+    this.restaurants$ = this.restaurantsService.getRestaurants().pipe(
+      map(restaurants => restaurants.map(r => r.value))
+    );
 
     this.restaurantFormControlHasValueSelected$ = this.restaurantFormControlChange$.pipe(
       map((v) => (v ? true : false)),
@@ -82,9 +84,14 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
        */
 
       const restaurandID = this.formGroup.controls.restaurants.value.uuid;
-      this.menuCardsCollectionService.getMenuCardCollectionForRestaurant(restaurandID).subscribe(console.log);
-
-
+      this.menuCardsCollectionService
+        .getMenuCardCollectionForRestaurant(restaurandID)
+        .pipe(
+          map((collection: MenuCardsCollection[]) => {
+            this.verifyCollection(collection);
+          })
+        )
+        .subscribe(console.log);
     }
   }
 
@@ -158,6 +165,17 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
       duration: 4000
     });
     this.dialogRef.close();
+  }
+
+  /**
+   * Query syntax of Firebase always returns an array, when you query for data.
+   * It seems like it is not possible to query for a single document, when you don't know the document ID
+   * @param collection
+   */
+  private verifyCollection(collection: MenuCardsCollection[]) {
+    if (collection.length > 0) {
+      throw Error('Inconsistent data detected. Collection can not have more than 1 value.');
+    }
   }
 }
 

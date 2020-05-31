@@ -5,6 +5,7 @@ import {Restaurant} from '../shared/models/restaurant';
 import {ActivatedRoute, Router} from '@angular/router';
 import {OrchestrationService} from '../shared/services/orchestration.service';
 import {normalizeRoutes} from '../shared/util/normalize-routes';
+import {map} from 'rxjs/operators';
 
 @Component({
   selector: 'app-restaurant-list',
@@ -21,7 +22,9 @@ export class RestaurantListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.restaurants$ = this.restaurantsService.getRestaurants();
+    this.restaurants$ = this.restaurantsService.getRestaurants().pipe(
+      map(restaurants => restaurants.map(r => r.value))
+    );
   }
 
   onRestaurantSelect(restaurant: Restaurant): void {
