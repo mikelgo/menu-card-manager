@@ -33,30 +33,3 @@ export class RestaurantsService {
   }
 }
 
-const MOCK_RESTAURANTS: Restaurant[] = [
-  {
-    uuid: 'asasdf',
-    name: 'Siggis stube mit richtig langem Namen, so richtig lang',
-    address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}
-  },
-  {
-    uuid: 'asdf',
-    name: 'Siggis stube',
-    address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}
-  },
-  {uuid: 'asdfasdf', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {
-    uuid: 'as',
-    name: 'Siggis stube',
-    address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640', websiteUrl: 'www.stube.de'}
-  }
-];
