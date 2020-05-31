@@ -8,5 +8,5 @@ export interface MenuCard {
    * Reference to the File which holds the menu card. E.g. a PDF/.png/...
    */
   mediaRef: string;
-  uploadDate?: Date;
+  uploadDate?: string;
 }

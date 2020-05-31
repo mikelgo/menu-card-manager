@@ -4,7 +4,7 @@ import {Restaurant} from '../../models/restaurant';
 import {RestaurantsService} from '../../services/restaurants.service';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {MenuCardsCollection} from '../../models/menu-cards-collection';
-import {map, startWith, switchMap} from 'rxjs/operators';
+import {map, startWith} from 'rxjs/operators';
 import {MenuCardsService} from '../../services/menu-cards.service';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {createUUID} from '../../util/create-uuid';
@@ -43,9 +43,6 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     this.initializeForm();
 
     this.restaurants$ = this.restaurantsService.getRestaurants();
-    this.menuCardsCollectionForSelectedRestaurant$ = this.restaurantFormControlChange$.pipe(
-      switchMap((restaurant) => this.menuCardsCollectionService.getMenuCardCollectionForRestaurant(restaurant.uuid))
-    );
 
     this.restaurantFormControlHasValueSelected$ = this.restaurantFormControlChange$.pipe(
       map((v) => (v ? true : false)),
@@ -62,14 +59,8 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     this.destroy$$.next();
     this.destroy$$.complete();
   }
-  // TODO implement firebase upload
+
   onMenuCardSubmit() {
-    /**
-     * MenuCardsCollection for selected restaurant updaten --> MenuCardsCollection.menuCards push new item
-     * mediaRef on menu-card updaten
-     *
-     * or new restaurant
-     */
     // TODo add address form fields
     if (this.isNewRestaurant()) {
       const newRestaurant: Restaurant = {
@@ -82,10 +73,18 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
         (error) => this.confirmError(),
         () => this.confirmCreation()
       );
-    }
-
-    if (this.isExistingRestaurant()) {
+    } else {
       // TODO implement
+      /**
+       * a)  When no MenuCardsCollection there then create new otherwise update the existing one
+       * b) Upload file to storage and upate MenuCardsCollection with link/ref to the file
+       *
+       */
+
+      const restaurandID = this.formGroup.controls.restaurants.value.uuid;
+      this.menuCardsCollectionService.getMenuCardCollectionForRestaurant(restaurandID).subscribe(console.log);
+
+
     }
   }
 
@@ -140,7 +139,7 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
   }
 
   private isExistingRestaurant() {
-    return !this.formGroup.controls.newRestaurantName.value;
+    return this.formGroup.controls.menuCardName.value;
   }
 
   private isNewRestaurant() {
@@ -161,18 +160,5 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     this.dialogRef.close();
   }
 }
-/*
- * a) Add dropdown with existing restaurants ----X
- * b) on Select show existing menu-cards as info // or just only give info when entered name already exists!
- * c) on select show fields to:
- *        - add a name
- *        - add a file
- * d) enable upload button
- *
- * -----
- *
- * a) add new restaurant---> only enable when no restaurant is selected
- *
- * */
-// TODO form validation
+
 // TODO upload to Firebase
