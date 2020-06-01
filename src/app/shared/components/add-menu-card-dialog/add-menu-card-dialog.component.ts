@@ -9,6 +9,7 @@ import {MenuCardsService} from '../../services/menu-cards.service';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {createUUID} from '../../util/create-uuid';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {FirebaseEntityWrapper} from '../../models/firebaseEntityWrapper';
 
 @Component({
   selector: 'app-add-menu-card',
@@ -41,10 +42,11 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeForm();
+    this.menuCardsCollectionService.getMenuCardCollections().subscribe(console.log);
 
-    this.restaurants$ = this.restaurantsService.getRestaurants().pipe(
-      map(restaurants => restaurants.map(r => r.value))
-    );
+    this.restaurants$ = this.restaurantsService
+      .getRestaurants()
+      .pipe(map((restaurants) => restaurants.map((r) => r.value)));
 
     this.restaurantFormControlHasValueSelected$ = this.restaurantFormControlChange$.pipe(
       map((v) => (v ? true : false)),
@@ -84,19 +86,35 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
        */
 
       const restaurandID = this.formGroup.controls.restaurants.value.uuid;
-      this.menuCardsCollectionService
-        .getMenuCardCollectionForRestaurant(restaurandID)
-        .pipe(
-          map((collection: MenuCardsCollection[]) => {
-            this.verifyCollection(collection);
-          })
-        )
-        .subscribe(console.log);
+      this.menuCardsCollectionService.getMenuCardCollectionForRestaurant(restaurandID).subscribe((collection) => {
+        console.log('Trying to get colleciton %o for restaurant ID %o', collection, restaurandID);
+        if (this.isNewCollection(collection)) {
+        const newCollection: MenuCardsCollection = {
+          uuid: createUUID(),
+          restaurant: restaurandID,
+          menuCards: [
+            {
+              uuid: createUUID(),
+              displayName: this.formGroup.controls.menuCardName.value,
+              mediaRef: this.formGroup.controls.menuCardFile.value, // of course not correct --> ID to document
+              uploadDate: new Date(Date.now()).toISOString()
+            }
+          ]
+        };
+        this.menuCardsCollectionService.createMenuCardsCollection(newCollection).subscribe((x) => {
+          console.log('Created new Collection %o', x);
+        });
+        }
+      });
     }
   }
 
   onCancel() {
     this.dialogRef.close();
+  }
+
+  private isNewCollection(collection: FirebaseEntityWrapper<string, MenuCardsCollection>[]): boolean {
+    return collection.length === 0;
   }
 
   private initializeForm(): void {
@@ -172,8 +190,9 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
    * It seems like it is not possible to query for a single document, when you don't know the document ID
    * @param collection
    */
-  private verifyCollection(collection: MenuCardsCollection[]) {
-    if (collection.length > 0) {
+  private verifyCollection(collection: FirebaseEntityWrapper<string, MenuCardsCollection>[]) {
+    const collectionI = collection.map((v) => v.value);
+    if (collectionI.length > 0) {
       throw Error('Inconsistent data detected. Collection can not have more than 1 value.');
     }
   }
