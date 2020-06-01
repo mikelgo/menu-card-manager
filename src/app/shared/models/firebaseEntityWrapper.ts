@@ -1,7 +1,7 @@
 /**
  * Wrapper for documents coming from Firebase
  */
-export interface Entity<ID, T> {
+export interface FirebaseEntityWrapper<ID, T> {
   id: ID;
   value: T;
 }
