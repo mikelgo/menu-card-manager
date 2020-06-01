@@ -30,6 +30,7 @@ export class MenuCardListComponent implements OnInit, OnDestroy {
 
     this.activeMenucardCollection$ = this.activeRestaurantId$.pipe(
       switchMap((restaurantId) => this.menuCardsCollectionService.getMenuCardCollectionForRestaurant(restaurantId)),
+      map(v => v.map(val => val.value)),
       map(v => v[0]),
       takeUntil(this.destroy$$)
     );

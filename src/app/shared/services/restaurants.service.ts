@@ -14,11 +14,6 @@ import DocumentData = firebase.firestore.DocumentData;
   providedIn: 'root'
 })
 export class RestaurantsService {
-  public restaurants$: Observable<Restaurant[]> = this.getRestaurants().pipe(
-    filter((v) => v !== null || undefined),
-    map((v) => v.map((val) => val.value))
-  );
-  public restaurantsSnapshot$: Observable<FirebaseEntityWrapper<string, Restaurant>[]> = this.getRestaurantsSnapShot();
   private readonly RESTAURANT_COLLECTION_NAME = 'restaurants';
   private loading$$ = new BehaviorSubject<boolean>(false);
   public pendingRestaurant$ = this.loading$$.asObservable();
