@@ -1,4 +1,3 @@
-
 <div class="dialog-container">
     <mat-icon (click)="onCancel()" class="ic-close">close</mat-icon>
     <form [formGroup]="formGroup" >
@@ -19,7 +18,7 @@
                <br>
                <div class="formfield-wrapper full-width">
                    <mat-label>Datei auswählen</mat-label>
-                   <input [formControl]="formGroup.controls.menuCardFile"  accept=".jpg, .jpeg, .png, .pdf" type="file">
+                   <input (change)="updateFileFormControl($event)"   accept=".jpg, .jpeg, .png, .pdf" type="file">
                </div>
                <br>
            </ng-container>

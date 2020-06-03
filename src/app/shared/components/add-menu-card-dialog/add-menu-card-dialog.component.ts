@@ -10,6 +10,8 @@ import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {createUUID} from '../../util/create-uuid';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {FirebaseEntityWrapper} from '../../models/firebaseEntityWrapper';
+import {FileStorageService} from '../../services/file-storage.service';
+import {MenuFile} from '../../models/menu-file';
 
 @Component({
   selector: 'app-add-menu-card',
@@ -37,7 +39,8 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     @Inject(MAT_DIALOG_DATA) private data: any,
     private restaurantsService: RestaurantsService,
     private menuCardsCollectionService: MenuCardsService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private fileStorageService: FileStorageService
   ) {}
 
   ngOnInit(): void {
@@ -58,6 +61,8 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     this.newRestaurantSelectChange$.subscribe((isSelected) => {
       this.toggleFormGroupVisibility(isSelected);
     });
+
+    this.formGroup.controls.menuCardFile.valueChanges.subscribe(console.log);
   }
   ngOnDestroy() {
     this.destroy$$.next();
@@ -66,6 +71,7 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
 
   onMenuCardSubmit() {
     // TODo add address form fields
+    // this.fileStorageService.upload().subscribe(console.log);
     if (this.isNewRestaurant()) {
       const newRestaurant: Restaurant = {
         uuid: createUUID(),
@@ -134,6 +140,15 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
 
   onCancel() {
     this.dialogRef.close();
+  }
+
+  updateFileFormControl(event) {
+    const file: MenuFile = {
+      uuid: createUUID(),
+      file: event.target.files[0],
+      localPath: event.target.value
+    };
+    this.formGroup.controls.menuCardFile.patchValue(file);
   }
 
   private isNewCollection(collection: FirebaseEntityWrapper<string, MenuCardsCollection>[]): boolean {
