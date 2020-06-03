@@ -49,7 +49,6 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeForm();
-    this.menuCardsCollectionService.getMenuCardCollections().subscribe(console.log);
 
     this.restaurants$ = this.restaurantsService
       .getRestaurants()
@@ -66,7 +65,6 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
       this.toggleFormGroupVisibility(isSelected);
     });
 
-    this.formGroup.controls.menuCardFile.valueChanges.subscribe(console.log);
   }
   ngOnDestroy() {
     this.destroy$$.next();
@@ -85,9 +83,7 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     this.fileStorageService.upload(file.uuid, file.file, uploadMetaData).pipe(
       takeUntil(this.destroy$$)
     ).subscribe(
-      (x) => {
-        console.log('UPLOAD %o', x);
-      },
+      (x) => {},
       (error) => fileUploadFinished$.next({id: file.uuid, state: 'ERROR'}),
       () => fileUploadFinished$.next({id: file.uuid, state: 'SUCCESS'})
     );
@@ -122,7 +118,6 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
 
             return this.menuCardsCollectionService.createMenuCardsCollection(newCollection);
           } else {
-            console.log('Existing collection %o', collection);
             // existing collection
             const updatedCollection: MenuCardsCollection = {
               ...collection[0].value,
@@ -148,18 +143,13 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
 
     fileUploadFinished$.subscribe((v) => {
       if (v.state === 'SUCCESS') {
-        console.log('File Upload successfull - now posting collection ');
         submitCollection$.pipe(
           takeUntil(this.destroy$$)
         ).subscribe(
-          (x) => {
-            console.log(x);
-          },
+          (x) => {},
           (error) => this.confirmError(),
           () => this.confirmCreation()
         );
-      } else {
-        console.log('File Upload NOT successfull');
       }
     });
   }
