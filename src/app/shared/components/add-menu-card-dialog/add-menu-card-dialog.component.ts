@@ -69,9 +69,22 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     this.destroy$$.complete();
   }
 
+  uploadFile() {
+    console.log('uploadFile() called');
+    const file: MenuFile = this.formGroup.controls.menuCardFile.value;
+    this.fileStorageService.upload(file.uuid, file.file).subscribe((x) => {
+      console.log('UPLOAD %o', x);
+    });
+  }
+
   onMenuCardSubmit() {
     // TODo add address form fields
-    // this.fileStorageService.upload().subscribe(console.log);
+
+    const file: MenuFile = this.formGroup.controls.menuCardFile.value;
+    const fileUpload$ = this.fileStorageService.upload(file.uuid, file.file).subscribe((x) => {
+      console.log('UPLOAD %o', x);
+    });
+
     if (this.isNewRestaurant()) {
       const newRestaurant: Restaurant = {
         uuid: createUUID(),
@@ -125,10 +138,13 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
                   }
                 ]
               };
-              return this.menuCardsCollectionService.updateMenuCardsCollection({id: collection[0].id, value: updatedCollection});
+              return this.menuCardsCollectionService.updateMenuCardsCollection({
+                id: collection[0].id,
+                value: updatedCollection
+              });
             }
           }),
-          catchError(err =>  of({}))
+          catchError((err) => of({}))
         )
         .subscribe(
           (x) => {},

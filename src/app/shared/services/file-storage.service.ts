@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
-import {AngularFireStorage, AngularFireUploadTask} from '@angular/fire/storage';
-import {defer, from, Observable} from 'rxjs';
+import {AngularFireStorage} from '@angular/fire/storage';
+import {Observable} from 'rxjs';
+import UploadTaskSnapshot = firebase.storage.UploadTaskSnapshot;
 
 @Injectable({
   providedIn: 'root'
@@ -8,9 +9,7 @@ import {defer, from, Observable} from 'rxjs';
 export class FileStorageService {
   constructor(private fireStorage: AngularFireStorage) {}
 
-  public upload(filepath: string, file: any): Observable<AngularFireUploadTask> {
-    return defer(() => {
-      from(this.fireStorage.upload(filepath, file));
-    });
+  public upload(filepath: string, file: File): Observable<UploadTaskSnapshot | undefined> {
+    return this.fireStorage.upload(filepath, file).snapshotChanges();
   }
 }
