@@ -1,10 +1,10 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {Observable, Subject} from 'rxjs';
+import {Observable, of, Subject} from 'rxjs';
 import {Restaurant} from '../../models/restaurant';
 import {RestaurantsService} from '../../services/restaurants.service';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {MenuCardsCollection} from '../../models/menu-cards-collection';
-import {map, startWith} from 'rxjs/operators';
+import {catchError, map, startWith, switchMap} from 'rxjs/operators';
 import {MenuCardsService} from '../../services/menu-cards.service';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {createUUID} from '../../util/create-uuid';
@@ -78,34 +78,57 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
         () => this.confirmCreation()
       );
     } else {
-      // TODO implement
+      // TODO implement Upload
       /**
        * a)  When no MenuCardsCollection there then create new otherwise update the existing one
        * b) Upload file to storage and upate MenuCardsCollection with link/ref to the file
        *
        */
-
       const restaurandID = this.formGroup.controls.restaurants.value.uuid;
-      this.menuCardsCollectionService.getMenuCardCollectionForRestaurant(restaurandID).subscribe((collection) => {
-        console.log('Trying to get colleciton %o for restaurant ID %o', collection, restaurandID);
-        if (this.isNewCollection(collection)) {
-        const newCollection: MenuCardsCollection = {
-          uuid: createUUID(),
-          restaurant: restaurandID,
-          menuCards: [
-            {
-              uuid: createUUID(),
-              displayName: this.formGroup.controls.menuCardName.value,
-              mediaRef: this.formGroup.controls.menuCardFile.value, // of course not correct --> ID to document
-              uploadDate: new Date(Date.now()).toISOString()
+      this.menuCardsCollectionService
+        .getMenuCardCollectionForRestaurant(restaurandID)
+        .pipe(
+          switchMap((collection) => {
+            console.log('Trying to get colleciton %o for restaurant ID %o', collection, restaurandID);
+            if (this.isNewCollection(collection)) {
+              const newCollection: MenuCardsCollection = {
+                uuid: createUUID(),
+                restaurant: restaurandID,
+                menuCards: [
+                  {
+                    uuid: createUUID(),
+                    displayName: this.formGroup.controls.menuCardName.value,
+                    mediaRef: this.formGroup.controls.menuCardFile.value, // of course not correct --> ID to document
+                    uploadDate: new Date(Date.now()).toISOString()
+                  }
+                ]
+              };
+              return this.menuCardsCollectionService.createMenuCardsCollection(newCollection);
+            } else {
+              console.log('Existing collection %o', collection);
+              // existing collection
+              const updatedCollection: MenuCardsCollection = {
+                ...collection[0].value,
+                menuCards: [
+                  ...collection[0].value.menuCards,
+                  {
+                    uuid: createUUID(),
+                    displayName: this.formGroup.controls.menuCardName.value,
+                    mediaRef: this.formGroup.controls.menuCardFile.value, // of course not correct --> ID to document
+                    uploadDate: new Date(Date.now()).toISOString()
+                  }
+                ]
+              };
+              return this.menuCardsCollectionService.updateMenuCardsCollection({id: collection[0].id, value: updatedCollection});
             }
-          ]
-        };
-        this.menuCardsCollectionService.createMenuCardsCollection(newCollection).subscribe((x) => {
-          console.log('Created new Collection %o', x);
-        });
-        }
-      });
+          }),
+          catchError(err =>  of({}))
+        )
+        .subscribe(
+          (x) => {},
+          (error) => this.confirmError(),
+          () => this.confirmCreation()
+        );
     }
   }
 
@@ -197,5 +220,3 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     }
   }
 }
-
-// TODO upload to Firebase

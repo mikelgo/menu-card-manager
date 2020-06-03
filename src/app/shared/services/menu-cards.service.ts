@@ -1,12 +1,10 @@
 import {Injectable} from '@angular/core';
 import {defer, from, Observable, of} from 'rxjs';
 import {MenuCardsCollection} from '../models/menu-cards-collection';
-import {AngularFirestore, DocumentChangeAction, DocumentReference} from '@angular/fire/firestore';
+import {AngularFirestore, DocumentReference} from '@angular/fire/firestore';
 import {catchError, distinctUntilChanged, map, shareReplay} from 'rxjs/operators';
 import {FirebaseEntityWrapper} from '../models/firebaseEntityWrapper';
-import * as firebase from 'firebase';
 import {mapSnapshotToFireBaseEntityWrapper, mapToFirebaseEntityWrapper} from '../util/map-to-firebase-entity-wrapper';
-import {Restaurant} from '../models/restaurant';
 
 @Injectable({
   providedIn: 'root'
@@ -66,14 +64,16 @@ export class MenuCardsService {
     });
   }
 
-  // TODO check if this really updates an existing collection
-  public updateMenuCardsCollection(collection: MenuCardsCollection): Observable<DocumentReference> {
-    throw Error('not implemented');
-    // return this.firestore
-    //   .collection(this.MENU_CARDS_COLLECTION_NAME, (ref) => {
-    //     ref.where('uuid', '==', collection.uuid);
-    //   })
-    //   .doc()
-    //   .set(collection, {merge: true});
+  public updateMenuCardsCollection(
+    collection: FirebaseEntityWrapper<string, MenuCardsCollection>
+  ): Observable<DocumentReference> {
+    return defer(() => {
+      from(
+        this.firestore
+          .collection(this.MENU_CARDS_COLLECTION_NAME)
+          .doc(collection.id)
+          .set(collection.value, {merge: true})
+      ).pipe(catchError((err) => of(null)));
+    });
   }
 }
