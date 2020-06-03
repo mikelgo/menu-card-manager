@@ -1,10 +1,10 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {Observable, of, Subject} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {Restaurant} from '../../models/restaurant';
 import {RestaurantsService} from '../../services/restaurants.service';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {MenuCardsCollection} from '../../models/menu-cards-collection';
-import {catchError, map, startWith, switchMap} from 'rxjs/operators';
+import {map, startWith, switchMap, takeUntil} from 'rxjs/operators';
 import {MenuCardsService} from '../../services/menu-cards.service';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {createUUID} from '../../util/create-uuid';
@@ -12,6 +12,10 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import {FirebaseEntityWrapper} from '../../models/firebaseEntityWrapper';
 import {FileStorageService} from '../../services/file-storage.service';
 import {MenuFile} from '../../models/menu-file';
+import {FileUploadFinishedEvent} from '../../models/file-upload-finished-event';
+import * as firebase from 'firebase';
+import {FileUploadMetaData} from '../../models/file-upload-meta-data';
+import DocumentReference = firebase.firestore.DocumentReference;
 
 @Component({
   selector: 'app-add-menu-card',
@@ -69,21 +73,26 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     this.destroy$$.complete();
   }
 
-  uploadFile() {
-    console.log('uploadFile() called');
-    const file: MenuFile = this.formGroup.controls.menuCardFile.value;
-    this.fileStorageService.upload(file.uuid, file.file).subscribe((x) => {
-      console.log('UPLOAD %o', x);
-    });
-  }
-
   onMenuCardSubmit() {
     // TODo add address form fields
-
+    const fileUploadFinished$ = new Subject<FileUploadFinishedEvent>();
     const file: MenuFile = this.formGroup.controls.menuCardFile.value;
-    const fileUpload$ = this.fileStorageService.upload(file.uuid, file.file).subscribe((x) => {
-      console.log('UPLOAD %o', x);
-    });
+    const uploadMetaData: FileUploadMetaData = {
+      fileUUID: file.uuid,
+      fileSize: file.file.size.toString(),
+      uploadTimeStamp: new Date(Date.now()).toISOString()
+    };
+    this.fileStorageService.upload(file.uuid, file.file, uploadMetaData).pipe(
+      takeUntil(this.destroy$$)
+    ).subscribe(
+      (x) => {
+        console.log('UPLOAD %o', x);
+      },
+      (error) => fileUploadFinished$.next({id: file.uuid, state: 'ERROR'}),
+      () => fileUploadFinished$.next({id: file.uuid, state: 'SUCCESS'})
+    );
+
+    let submitCollection$: Observable<DocumentReference>;
 
     if (this.isNewRestaurant()) {
       const newRestaurant: Restaurant = {
@@ -91,67 +100,68 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
         name: this.formGroup.controls.newRestaurantName.value,
         address: null
       };
-      this.restaurantsService.createRestaurant(newRestaurant).subscribe(
-        (restaurant) => {},
-        (error) => this.confirmError(),
-        () => this.confirmCreation()
-      );
+      submitCollection$ = this.restaurantsService.createRestaurant(newRestaurant);
     } else {
-      // TODO implement Upload
-      /**
-       * a)  When no MenuCardsCollection there then create new otherwise update the existing one
-       * b) Upload file to storage and upate MenuCardsCollection with link/ref to the file
-       *
-       */
+
       const restaurandID = this.formGroup.controls.restaurants.value.uuid;
-      this.menuCardsCollectionService
-        .getMenuCardCollectionForRestaurant(restaurandID)
-        .pipe(
-          switchMap((collection) => {
-            console.log('Trying to get colleciton %o for restaurant ID %o', collection, restaurandID);
-            if (this.isNewCollection(collection)) {
-              const newCollection: MenuCardsCollection = {
-                uuid: createUUID(),
-                restaurant: restaurandID,
-                menuCards: [
-                  {
-                    uuid: createUUID(),
-                    displayName: this.formGroup.controls.menuCardName.value,
-                    mediaRef: this.formGroup.controls.menuCardFile.value, // of course not correct --> ID to document
-                    uploadDate: new Date(Date.now()).toISOString()
-                  }
-                ]
-              };
-              return this.menuCardsCollectionService.createMenuCardsCollection(newCollection);
-            } else {
-              console.log('Existing collection %o', collection);
-              // existing collection
-              const updatedCollection: MenuCardsCollection = {
-                ...collection[0].value,
-                menuCards: [
-                  ...collection[0].value.menuCards,
-                  {
-                    uuid: createUUID(),
-                    displayName: this.formGroup.controls.menuCardName.value,
-                    mediaRef: this.formGroup.controls.menuCardFile.value, // of course not correct --> ID to document
-                    uploadDate: new Date(Date.now()).toISOString()
-                  }
-                ]
-              };
-              return this.menuCardsCollectionService.updateMenuCardsCollection({
-                id: collection[0].id,
-                value: updatedCollection
-              });
-            }
-          }),
-          catchError((err) => of({}))
-        )
-        .subscribe(
-          (x) => {},
+      submitCollection$ = this.menuCardsCollectionService.getMenuCardCollectionForRestaurant(restaurandID).pipe(
+        switchMap((collection) => {
+          if (this.isNewCollection(collection)) {
+            const newCollection: MenuCardsCollection = {
+              uuid: createUUID(),
+              restaurant: restaurandID,
+              menuCards: [
+                {
+                  uuid: createUUID(),
+                  displayName: this.formGroup.controls.menuCardName.value.toString().trim(),
+                  mediaRef: file.uuid,
+                  uploadDate: new Date(Date.now()).toISOString()
+                }
+              ]
+            };
+
+            return this.menuCardsCollectionService.createMenuCardsCollection(newCollection);
+          } else {
+            console.log('Existing collection %o', collection);
+            // existing collection
+            const updatedCollection: MenuCardsCollection = {
+              ...collection[0].value,
+              menuCards: [
+                ...collection[0].value.menuCards,
+                {
+                  uuid: createUUID(),
+                  displayName: this.formGroup.controls.menuCardName.value.toString().trim(),
+                  mediaRef: file.uuid,
+                  uploadDate: new Date(Date.now()).toISOString()
+                }
+              ]
+            };
+
+            return this.menuCardsCollectionService.updateMenuCardsCollection({
+              id: collection[0].id,
+              value: updatedCollection
+            });
+          }
+        })
+      );
+    }
+
+    fileUploadFinished$.subscribe((v) => {
+      if (v.state === 'SUCCESS') {
+        console.log('File Upload successfull - now posting collection ');
+        submitCollection$.pipe(
+          takeUntil(this.destroy$$)
+        ).subscribe(
+          (x) => {
+            console.log(x);
+          },
           (error) => this.confirmError(),
           () => this.confirmCreation()
         );
-    }
+      } else {
+        console.log('File Upload NOT successfull');
+      }
+    });
   }
 
   onCancel() {
