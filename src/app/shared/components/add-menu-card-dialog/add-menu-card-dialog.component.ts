@@ -4,7 +4,7 @@ import {Restaurant} from '../../models/restaurant';
 import {RestaurantsService} from '../../services/restaurants.service';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {MenuCardsCollection} from '../../models/menu-cards-collection';
-import {map, startWith, switchMap, takeUntil} from 'rxjs/operators';
+import {map, startWith, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {MenuCardsService} from '../../services/menu-cards.service';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {createUUID} from '../../util/create-uuid';
@@ -12,7 +12,7 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import {FirebaseEntityWrapper} from '../../models/firebaseEntityWrapper';
 import {FileStorageService} from '../../services/file-storage.service';
 import {MenuFile} from '../../models/menu-file';
-import {FileUploadFinishedEvent} from '../../models/file-upload-finished-event';
+import {FileUploadEvent} from '../../models/file-upload-event';
 import * as firebase from 'firebase';
 import {FileUploadMetaData} from '../../models/file-upload-meta-data';
 import DocumentReference = firebase.firestore.DocumentReference;
@@ -33,10 +33,13 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
 
   public restaurantFormControlHasValueSelected$: Observable<boolean>;
   public newRestaurantSelectChange$: Observable<boolean>;
+  public fileSending$: Observable<boolean>;
   private destroy$$ = new Subject();
   private restaurantFormControlChange$: Observable<Restaurant>;
   private menuCardNameChange$: Observable<string>;
   private menuCardFileChange$: Observable<any>;
+  private fileUploadFinished$$ = new Subject<FileUploadEvent>();
+  public fileUploadFinished$ = this.fileUploadFinished$$.asObservable();
 
   constructor(
     private dialogRef: MatDialogRef<AddMenuCardDialogComponent>,
@@ -65,6 +68,10 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
       this.toggleFormGroupVisibility(isSelected);
     });
 
+    this.fileSending$ = this.fileUploadFinished$.pipe(
+      map((event) => event.state),
+      map((state) => state === 'SENDING')
+    );
   }
   ngOnDestroy() {
     this.destroy$$.next();
@@ -73,20 +80,24 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
 
   onMenuCardSubmit() {
     // TODo add address form fields
-    const fileUploadFinished$ = new Subject<FileUploadFinishedEvent>();
+
     const file: MenuFile = this.formGroup.controls.menuCardFile.value;
     const uploadMetaData: FileUploadMetaData = {
       fileUUID: file.uuid,
       fileSize: file.file.size.toString(),
       uploadTimeStamp: new Date(Date.now()).toISOString()
     };
-    this.fileStorageService.upload(file.uuid, file.file, uploadMetaData).pipe(
-      takeUntil(this.destroy$$)
-    ).subscribe(
-      (x) => {},
-      (error) => fileUploadFinished$.next({id: file.uuid, state: 'ERROR'}),
-      () => fileUploadFinished$.next({id: file.uuid, state: 'SUCCESS'})
-    );
+    this.fileStorageService
+      .upload(file.uuid, file.file, uploadMetaData)
+      .pipe(
+        takeUntil(this.destroy$$),
+        tap((_) => this.fileUploadFinished$$.next({id: file.uuid, state: 'SENDING'}))
+      )
+      .subscribe(
+        (x) => {},
+        (error) => this.fileUploadFinished$$.next({id: file.uuid, state: 'ERROR'}),
+        () => this.fileUploadFinished$$.next({id: file.uuid, state: 'SUCCESS'})
+      );
 
     let submitCollection$: Observable<DocumentReference>;
 
@@ -98,7 +109,6 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
       };
       submitCollection$ = this.restaurantsService.createRestaurant(newRestaurant);
     } else {
-
       const restaurandID = this.formGroup.controls.restaurants.value.uuid;
       submitCollection$ = this.menuCardsCollectionService.getMenuCardCollectionForRestaurant(restaurandID).pipe(
         switchMap((collection) => {
@@ -141,11 +151,9 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
       );
     }
 
-    fileUploadFinished$.subscribe((v) => {
+    this.fileUploadFinished$.subscribe((v) => {
       if (v.state === 'SUCCESS') {
-        submitCollection$.pipe(
-          takeUntil(this.destroy$$)
-        ).subscribe(
+        submitCollection$.pipe(takeUntil(this.destroy$$)).subscribe(
           (x) => {},
           (error) => this.confirmError(),
           () => this.confirmCreation()

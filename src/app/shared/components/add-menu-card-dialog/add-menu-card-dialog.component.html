@@ -45,9 +45,10 @@
             <div class="btn-group-wrapper">
                 <button
                         (click)="onMenuCardSubmit()"
-                        [disabled]="!(formIsValid$ | async)"
+                        [disabled]="!(formIsValid$ | async) || (fileSending$ | async)"
                         color="primary"
                         mat-flat-button>
+                    <mat-spinner *ngIf="fileSending$ | async" color="accent" diameter="25" ></mat-spinner>
                     Bestätigen
                 </button>
                 <button (click)="onCancel()" color="warn" mat-stroked-button>Abbrechen</button>
@@ -55,3 +56,4 @@
         </ng-container>
     </form>
 </div>
+
