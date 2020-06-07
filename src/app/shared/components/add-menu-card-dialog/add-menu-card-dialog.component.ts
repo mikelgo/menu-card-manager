@@ -20,6 +20,8 @@ import {urlValidator} from '../../validators/url-validator';
 import {Address} from '../../models/address';
 import DocumentReference = firebase.firestore.DocumentReference;
 
+const FILE_SIZE_LIMIT = 5 * 1024 * 1024;
+
 @Component({
   selector: 'app-add-menu-card',
   templateUrl: './add-menu-card-dialog.component.html',
@@ -40,9 +42,10 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
   private destroy$$ = new Subject();
   private restaurantFormControlChange$: Observable<Restaurant>;
   private menuCardNameChange$: Observable<string>;
-  private menuCardFileChange$: Observable<any>;
+  private menuCardFileChange$: Observable<MenuFile>;
   private fileUploadFinished$$ = new Subject<FileUploadEvent>();
   public fileUploadFinished$ = this.fileUploadFinished$$.asObservable();
+  public fileSizeExceedsLimit$: Observable<boolean>;
 
   constructor(
     private dialogRef: MatDialogRef<AddMenuCardDialogComponent>,
@@ -55,13 +58,18 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeForm();
-    this.formGroup.valueChanges.subscribe((x) => console.log(this.formGroup));
+
     this.restaurants$ = this.restaurantsService
       .getRestaurants()
       .pipe(map((restaurants) => restaurants.map((r) => r.value)));
 
     this.restaurantFormControlHasValueSelected$ = this.restaurantFormControlChange$.pipe(
       map((v) => (v ? true : false)),
+      startWith(false)
+    );
+
+    this.fileSizeExceedsLimit$ = this.menuCardFileChange$.pipe(
+      map((file) => file.file.size >= FILE_SIZE_LIMIT),
       startWith(false)
     );
 

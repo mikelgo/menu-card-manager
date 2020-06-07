@@ -19,6 +19,7 @@
                <div class="formfield-wrapper full-width">
                    <mat-label>Datei auswählen</mat-label>
                    <input (change)="updateFileFormControl($event)"   accept=".jpg, .jpeg, .png, .pdf" type="file">
+                   <mat-error *ngIf="fileSizeExceedsLimit$ | async">Datei ist zu groß! Max. 5MB erlaubt!</mat-error>
                </div>
                <br>
            </ng-container>
