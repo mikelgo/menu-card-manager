@@ -62,7 +62,7 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
       startWith(false)
     );
 
-    this.restaurantFormControlHasValueSelected$.subscribe((_) => this.setRequiredValidators());
+    this.restaurantFormControlHasValueSelected$.subscribe((hasValue) => this.toggleRequiredValidators(hasValue));
 
     this.newRestaurantSelectChange$.subscribe((isSelected) => {
       this.toggleFormGroupVisibility(isSelected);
@@ -185,7 +185,14 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
       menuCardName: new FormControl(),
       menuCardFile: new FormControl(),
       newRestaurantSelect: new FormControl(),
-      newRestaurantName: new FormControl()
+      newRestaurantName: new FormControl(),
+      address: new FormGroup({
+        street: new FormControl(),
+        zipCode: new FormControl(),
+        city: new FormControl(),
+        websiteUrl: new FormControl(),
+        googleMapsUrl: new FormControl()
+      })
     });
     this.initializeFormObservables();
   }
@@ -199,9 +206,20 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     this.formIsValid$ = this.formGroup.valueChanges.pipe(map((_) => this.formGroup.valid));
   }
 
-  private setRequiredValidators(): void {
-    this.formGroup.controls.menuCardName.setValidators(Validators.required);
-    this.formGroup.controls.menuCardFile.setValidators(Validators.required);
+  private toggleRequiredValidators(hasValue: boolean): void {
+    if (hasValue) {
+      this.formGroup.controls.menuCardName.setValidators(Validators.required);
+      this.formGroup.controls.menuCardFile.setValidators(Validators.required);
+      this.formGroup.get('address.street').setValidators(Validators.required);
+      this.formGroup.get('address.zipCode').setValidators(Validators.required);
+      this.formGroup.get('address.city').setValidators(Validators.required);
+    } else {
+      this.formGroup.controls.menuCardName.clearValidators();
+      this.formGroup.controls.menuCardFile.clearValidators();
+      this.formGroup.get('address.street').clearValidators();
+      this.formGroup.get('address.zipCode').clearValidators();
+      this.formGroup.get('address.city').clearValidators();
+    }
     this.formGroup.updateValueAndValidity();
   }
 

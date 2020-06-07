@@ -29,6 +29,13 @@
   align-self: flex-end;
   margin-bottom: 8px;
 }
+.formfield-group{
+  display: flex;
+  flex-direction: row;
+  & mat-form-field:nth-child(2) {
+    margin-left: 16px
+  }
+}
 mat-spinner {
   display: inline-block;
   margin-right: 8px;

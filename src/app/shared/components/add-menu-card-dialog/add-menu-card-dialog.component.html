@@ -39,6 +39,35 @@
                     <input [formControl]="formGroup.controls.newRestaurantName" matInput>
                 </mat-form-field>
                 <br>
+                <form formGroupName="address">
+                    <mat-form-field appearance="fill" class="full-width">
+                        <mat-label>Straße</mat-label>
+                        <input [formControl]="formGroup.get('address.street')" matInput>
+                    </mat-form-field>
+                    <br>
+                   <div class="formfield-group">
+                       <mat-form-field appearance="fill" class="full-width">
+                           <mat-label>PLZ</mat-label>
+                           <input [formControl]="formGroup.get('address.zipCode')" matInput>
+                       </mat-form-field>
+
+                       <mat-form-field appearance="fill" class="full-width">
+                           <mat-label>Stadt</mat-label>
+                           <input [formControl]="formGroup.get('address.city')" matInput>
+                       </mat-form-field>
+                   </div>
+                    <div class="formfield-group">
+                        <mat-form-field appearance="fill" class="full-width">
+                            <mat-label>Homepage (optional)</mat-label>
+                            <input [formControl]="formGroup.get('address.websiteUrl')" matInput>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="fill" class="full-width">
+                            <mat-label>Google Maps Link (optional)</mat-label>
+                            <input [formControl]="formGroup.get('address.googleMapsUrl')" matInput>
+                        </mat-form-field>
+                    </div>
+                </form>
             </ng-container>
         </ng-container>
         <ng-container *ngIf="(restaurantFormControlHasValueSelected$ | async) || (newRestaurantSelectChange$ | async)">
