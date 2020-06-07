@@ -9,6 +9,12 @@ import {HttpClientModule} from '@angular/common/http';
 import {RestaurantListModule} from './restaurant-list/restaurant-list.module';
 import {HeaderModule} from './header/header.module';
 import {SharedModule} from './shared/shared.module';
+import {AngularFireModule} from '@angular/fire';
+import {AngularFireAnalyticsModule} from '@angular/fire/analytics';
+import {AngularFirestoreModule} from '@angular/fire/firestore';
+import {environment} from '../environments/environment';
+import {AngularFireStorageModule} from '@angular/fire/storage';
+
 
 @NgModule({
   declarations: [AppComponent],
@@ -19,7 +25,11 @@ import {SharedModule} from './shared/shared.module';
     RestaurantListModule,
     HttpClientModule,
     HeaderModule,
-    SharedModule
+    SharedModule,
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFireAnalyticsModule,
+    AngularFirestoreModule,
+    AngularFireStorageModule
   ],
   providers: [],
   bootstrap: [AppComponent]

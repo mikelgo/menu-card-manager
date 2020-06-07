@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Observable, Subject} from 'rxjs';
-import {switchMap, takeUntil} from 'rxjs/operators';
+import {map, switchMap, takeUntil} from 'rxjs/operators';
 import {MenuCardsService} from '../shared/services/menu-cards.service';
 import {MenuCardsCollection} from '../shared/models/menu-cards-collection';
 import {OrchestrationService} from '../shared/services/orchestration.service';
@@ -30,6 +30,8 @@ export class MenuCardListComponent implements OnInit, OnDestroy {
 
     this.activeMenucardCollection$ = this.activeRestaurantId$.pipe(
       switchMap((restaurantId) => this.menuCardsCollectionService.getMenuCardCollectionForRestaurant(restaurantId)),
+      map(v => v.map(val => val.value)),
+      map(v => v[0]),
       takeUntil(this.destroy$$)
     );
   }

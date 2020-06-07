@@ -1,31 +1,89 @@
-
 <div class="dialog-container">
     <mat-icon (click)="onCancel()" class="ic-close">close</mat-icon>
     <form [formGroup]="formGroup" >
-        <mat-form-field appearance="fill" class="full-width">
-            <mat-label>Wähle ein Restaurant</mat-label>
-            <mat-select [formControl]="formGroup.controls.restaurants">
-                <mat-option *ngFor="let option of restaurants$ | async" [value]="option">{{option?.name}}</mat-option>
-            </mat-select>
-        </mat-form-field>
-        <br>
-        <ng-container *ngIf="restaurantFormControlHasValueSelected$ | async">
+        <!--   EXISTING RESTAURANT     -->
+       <ng-container *ngIf="!(newRestaurantSelectChange$ | async)">
+           <mat-form-field appearance="fill" class="full-width">
+               <mat-label>Wähle ein Restaurant</mat-label>
+               <mat-select [formControl]="formGroup.controls.restaurants">
+                   <mat-option *ngFor="let option of restaurants$ | async" [value]="option">{{option?.name}}</mat-option>
+               </mat-select>
+           </mat-form-field>
+           <br>
+           <ng-container *ngIf="restaurantFormControlHasValueSelected$ | async">
+               <mat-form-field appearance="fill" class="full-width">
+                   <mat-label>Bitte Name der Menükarte eingeben</mat-label>
+                   <input [formControl]="formGroup.controls.menuCardName" matInput>
+               </mat-form-field>
+               <br>
+               <div class="formfield-wrapper full-width">
+                   <mat-label>Datei auswählen</mat-label>
+                   <input (change)="updateFileFormControl($event)"   accept=".jpg, .jpeg, .png, .pdf" type="file">
+                   <mat-error *ngIf="fileSizeExceedsLimit$ | async">Datei ist zu groß! Max. 5MB erlaubt!</mat-error>
+               </div>
+               <br>
+           </ng-container>
+       </ng-container>
+
+        <!--   NEW RESTAURANT     -->
+        <ng-container *ngIf="!(restaurantFormControlHasValueSelected$ | async)">
             <mat-form-field appearance="fill" class="full-width">
-                <mat-label>Bitte Name der Menükarte eingeben</mat-label>
-                <input [formControl]="formGroup.controls.menuCardName" matInput>
+                <mat-label>Neues Restaurant anlegen</mat-label>
+                <mat-select [formControl]="formGroup.controls.newRestaurantSelect">
+                    <mat-option  [value]="false">Nein</mat-option>
+                    <mat-option  [value]="true">Ja</mat-option>
+                </mat-select>
             </mat-form-field>
-            <br>
-             <div class="formfield-wrapper full-width">
-                 <mat-label>Datei auswählen</mat-label>
-                 <input [formControl]="formGroup.controls.menuCardFile"  type="file">
-             </div>
-            <br>
+            <ng-container *ngIf="(newRestaurantSelectChange$ | async)">
+                <mat-form-field appearance="fill" class="full-width">
+                    <mat-label>Bitte Name des Restaurants eingeben</mat-label>
+                    <input [formControl]="formGroup.controls.newRestaurantName" matInput>
+                    <mat-error></mat-error>
+                </mat-form-field>
+
+                <br>
+                <form formGroupName="address">
+                    <mat-form-field appearance="fill" class="full-width">
+                        <mat-label>Straße</mat-label>
+                        <input [formControl]="formGroup.get('address.street')" matInput>
+                        <mat-error></mat-error>
+                    </mat-form-field>
+                    <br>
+                   <div class="formfield-group">
+                       <mat-form-field appearance="fill" class="full-width">
+                           <mat-label>PLZ</mat-label>
+                           <input [formControl]="formGroup.get('address.zipCode')" matInput>
+                           <mat-error></mat-error>
+                       </mat-form-field>
+
+                       <mat-form-field appearance="fill" class="full-width">
+                           <mat-label>Stadt</mat-label>
+                           <input [formControl]="formGroup.get('address.city')" matInput>
+                           <mat-error></mat-error>
+                       </mat-form-field>
+                   </div>
+                    <div class="formfield-group">
+                        <mat-form-field appearance="fill" class="full-width">
+                            <mat-label>Homepage (optional)</mat-label>
+                            <input [formControl]="formGroup.get('address.websiteUrl')" matInput>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="fill" class="full-width">
+                            <mat-label>Google Maps Link (optional)</mat-label>
+                            <input [formControl]="formGroup.get('address.googleMapsUrl')" matInput>
+                        </mat-form-field>
+                    </div>
+                </form>
+            </ng-container>
+        </ng-container>
+        <ng-container *ngIf="(restaurantFormControlHasValueSelected$ | async) || (newRestaurantSelectChange$ | async)">
             <div class="btn-group-wrapper">
                 <button
                         (click)="onMenuCardSubmit()"
-                        [disabled]="!(formIsValid$ | async)"
+                        [disabled]="!(formIsValid$ | async) || (fileSending$ | async)"
                         color="primary"
                         mat-flat-button>
+                    <mat-spinner *ngIf="fileSending$ | async" color="accent" diameter="25" ></mat-spinner>
                     Bestätigen
                 </button>
                 <button (click)="onCancel()" color="warn" mat-stroked-button>Abbrechen</button>
@@ -33,3 +91,4 @@
         </ng-container>
     </form>
 </div>
+

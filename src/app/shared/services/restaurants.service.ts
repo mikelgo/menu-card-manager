@@ -1,48 +1,64 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable, of} from 'rxjs';
+import {BehaviorSubject, defer, from, Observable, of} from 'rxjs';
 import {Restaurant} from '../models/restaurant';
-import {shareReplay} from 'rxjs/operators';
+import {catchError, filter, finalize, map, shareReplay} from 'rxjs/operators';
+import {AngularFirestore, DocumentReference} from '@angular/fire/firestore';
+import {FirebaseEntityWrapper} from '../models/firebaseEntityWrapper';
+import * as firebase from 'firebase';
+import {mapSnapshotToFireBaseEntityWrapper, mapToFirebaseEntityWrapper} from '../util/map-to-firebase-entity-wrapper';
+import DocumentSnapshot = firebase.firestore.DocumentSnapshot;
+import DocumentData = firebase.firestore.DocumentData;
 
 @Injectable({
   providedIn: 'root'
 })
 export class RestaurantsService {
-  constructor(private http: HttpClient) {}
+  private readonly RESTAURANT_COLLECTION_NAME = 'restaurants';
+  private loading$$ = new BehaviorSubject<boolean>(false);
+  public pendingRestaurant$ = this.loading$$.asObservable();
 
-  public getRestaurants(): Observable<Restaurant[]> {
-    return of(MOCK_RESTAURANTS).pipe(shareReplay({refCount: true, bufferSize: 1}));
+  constructor(private http: HttpClient, private firestore: AngularFirestore) {}
+
+  public getRestaurants(): Observable<FirebaseEntityWrapper<string, Restaurant>[]> {
+    return this.firestore
+      .collection(this.RESTAURANT_COLLECTION_NAME)
+      .get()
+      .pipe(
+        map((docs) => {
+          return mapToFirebaseEntityWrapper<Restaurant>(docs);
+        }),
+        shareReplay({refCount: true, bufferSize: 1})
+      );
   }
 
-  public createRestaurant(restaurant: Restaurant): Observable<Restaurant> {
-    throw new Error('not implemented yet');
+  public getRestaurantsSnapShot(): Observable<FirebaseEntityWrapper<string, Restaurant>[]> {
+    return this.firestore
+      .collection<Restaurant>(this.RESTAURANT_COLLECTION_NAME)
+      .snapshotChanges()
+      .pipe(
+        map((docs) => {
+          return mapSnapshotToFireBaseEntityWrapper<Restaurant>(docs);
+        }),
+        shareReplay({refCount: true, bufferSize: 1})
+      );
+  }
+
+  public getRestaurant(docId: string): Observable<DocumentSnapshot<DocumentData>> {
+    return this.firestore
+      .collection(this.RESTAURANT_COLLECTION_NAME)
+      .doc(docId)
+      .get()
+      .pipe(shareReplay({refCount: true, bufferSize: 1}));
+  }
+
+  public createRestaurant(restaurant: Restaurant): Observable<DocumentReference> {
+    this.loading$$.next(true);
+    return defer(() => {
+      from(this.firestore.collection(this.RESTAURANT_COLLECTION_NAME).add(restaurant)).pipe(
+        catchError((err) => of(null)),
+        finalize(() => this.loading$$.next(false))
+      );
+    });
   }
 }
-
-const MOCK_RESTAURANTS: Restaurant[] = [
-  {
-    uuid: 'asasdf',
-    name: 'Siggis stube mit richtig langem Namen, so richtig lang',
-    address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}
-  },
-  {
-    uuid: 'asdf',
-    name: 'Siggis stube',
-    address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}
-  },
-  {uuid: 'asdfasdf', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {uuid: 'as', name: 'Siggis stube', address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640'}},
-  {
-    uuid: 'as',
-    name: 'Siggis stube',
-    address: {street: 'straße 1', city: 'Stubenstadt', zipCode: '73640', websiteUrl: 'www.stube.de'}
-  }
-];
