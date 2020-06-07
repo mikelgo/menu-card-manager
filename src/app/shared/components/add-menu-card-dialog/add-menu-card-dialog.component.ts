@@ -16,6 +16,7 @@ import {FileUploadEvent} from '../../models/file-upload-event';
 import * as firebase from 'firebase';
 import {FileUploadMetaData} from '../../models/file-upload-meta-data';
 import {zipCodeValidator} from '../../validators/zip-code-validator';
+import {urlValidator} from '../../validators/url-validator';
 import DocumentReference = firebase.firestore.DocumentReference;
 
 @Component({
@@ -216,6 +217,8 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
       this.formGroup.get('address.street').setValidators(Validators.required);
       this.formGroup.get('address.zipCode').setValidators([Validators.required, zipCodeValidator]);
       this.formGroup.get('address.city').setValidators(Validators.required);
+      this.formGroup.get('address.websiteUrl').setValidators([urlValidator]);
+      this.formGroup.get('address.googleMapsUrl').setValidators([urlValidator]);
     } else {
       this.formGroup.controls.menuCardName.clearValidators();
       this.formGroup.controls.menuCardFile.clearValidators();
