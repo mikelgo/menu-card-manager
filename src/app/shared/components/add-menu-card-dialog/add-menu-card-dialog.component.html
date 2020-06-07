@@ -37,23 +37,28 @@
                 <mat-form-field appearance="fill" class="full-width">
                     <mat-label>Bitte Name des Restaurants eingeben</mat-label>
                     <input [formControl]="formGroup.controls.newRestaurantName" matInput>
+                    <mat-error></mat-error>
                 </mat-form-field>
+
                 <br>
                 <form formGroupName="address">
                     <mat-form-field appearance="fill" class="full-width">
                         <mat-label>Straße</mat-label>
                         <input [formControl]="formGroup.get('address.street')" matInput>
+                        <mat-error></mat-error>
                     </mat-form-field>
                     <br>
                    <div class="formfield-group">
                        <mat-form-field appearance="fill" class="full-width">
                            <mat-label>PLZ</mat-label>
                            <input [formControl]="formGroup.get('address.zipCode')" matInput>
+                           <mat-error></mat-error>
                        </mat-form-field>
 
                        <mat-form-field appearance="fill" class="full-width">
                            <mat-label>Stadt</mat-label>
                            <input [formControl]="formGroup.get('address.city')" matInput>
+                           <mat-error></mat-error>
                        </mat-form-field>
                    </div>
                     <div class="formfield-group">

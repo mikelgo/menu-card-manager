@@ -15,6 +15,7 @@ import {MenuFile} from '../../models/menu-file';
 import {FileUploadEvent} from '../../models/file-upload-event';
 import * as firebase from 'firebase';
 import {FileUploadMetaData} from '../../models/file-upload-meta-data';
+import {zipCodeValidator} from '../../validators/zip-code-validator';
 import DocumentReference = firebase.firestore.DocumentReference;
 
 @Component({
@@ -52,7 +53,7 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeForm();
-
+    this.formGroup.valueChanges.subscribe(x => console.log(this.formGroup));
     this.restaurants$ = this.restaurantsService
       .getRestaurants()
       .pipe(map((restaurants) => restaurants.map((r) => r.value)));
@@ -207,11 +208,13 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
   }
 
   private toggleRequiredValidators(hasValue: boolean): void {
-    if (hasValue) {
+    console.log(hasValue)
+    // TODO further reasonable validators
+    if (!hasValue) {
       this.formGroup.controls.menuCardName.setValidators(Validators.required);
       this.formGroup.controls.menuCardFile.setValidators(Validators.required);
       this.formGroup.get('address.street').setValidators(Validators.required);
-      this.formGroup.get('address.zipCode').setValidators(Validators.required);
+      this.formGroup.get('address.zipCode').setValidators([Validators.required, zipCodeValidator]);
       this.formGroup.get('address.city').setValidators(Validators.required);
     } else {
       this.formGroup.controls.menuCardName.clearValidators();
