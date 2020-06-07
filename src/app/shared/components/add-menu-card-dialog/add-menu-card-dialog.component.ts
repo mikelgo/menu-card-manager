@@ -17,6 +17,7 @@ import * as firebase from 'firebase';
 import {FileUploadMetaData} from '../../models/file-upload-meta-data';
 import {zipCodeValidator} from '../../validators/zip-code-validator';
 import {urlValidator} from '../../validators/url-validator';
+import {Address} from '../../models/address';
 import DocumentReference = firebase.firestore.DocumentReference;
 
 @Component({
@@ -54,7 +55,7 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeForm();
-    this.formGroup.valueChanges.subscribe(x => console.log(this.formGroup));
+    this.formGroup.valueChanges.subscribe((x) => console.log(this.formGroup));
     this.restaurants$ = this.restaurantsService
       .getRestaurants()
       .pipe(map((restaurants) => restaurants.map((r) => r.value)));
@@ -81,8 +82,6 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
   }
 
   onMenuCardSubmit() {
-    // TODo add address form fields
-
     const file: MenuFile = this.formGroup.controls.menuCardFile.value;
     const uploadMetaData: FileUploadMetaData = {
       fileUUID: file.uuid,
@@ -107,7 +106,7 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
       const newRestaurant: Restaurant = {
         uuid: createUUID(),
         name: this.formGroup.controls.newRestaurantName.value,
-        address: null
+        address: this.getAddressFromFormFields(this.formGroup)
       };
       submitCollection$ = this.restaurantsService.createRestaurant(newRestaurant);
     } else {
@@ -209,7 +208,7 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
   }
 
   private toggleRequiredValidators(hasValue: boolean): void {
-    console.log(hasValue)
+    console.log(hasValue);
     // TODO further reasonable validators
     if (!hasValue) {
       this.formGroup.controls.menuCardName.setValidators(Validators.required);
@@ -281,5 +280,15 @@ export class AddMenuCardDialogComponent implements OnInit, OnDestroy {
     if (collectionI.length > 0) {
       throw Error('Inconsistent data detected. Collection can not have more than 1 value.');
     }
+  }
+
+  private getAddressFromFormFields(formgrup: FormGroup): Address {
+    return {
+      city: formgrup.get('address.city').value,
+      zipCode: formgrup.get('address.zipCode').value,
+      street: formgrup.get('address.street').value,
+      websiteUrl: formgrup.get('address.websiteUrl').value ? formgrup.get('address.websiteUrl').value : '',
+      googleMapsUrl: formgrup.get('address.googleMapsUrl').value ? formgrup.get('address.googleMapsUrl').value : ''
+    };
   }
 }
